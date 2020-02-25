@@ -4,5 +4,5 @@ class QuestionData {
   final String title;
   final List<AnswerData> answers;
 
-  QuestionData({this.title, this.answers});
+  const QuestionData({this.title, this.answers});
 }

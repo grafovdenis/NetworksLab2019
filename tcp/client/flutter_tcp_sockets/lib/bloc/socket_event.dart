@@ -14,3 +14,12 @@ class LoginEvent extends SocketEvent {
 class TestsEvent extends SocketEvent {}
 
 class CloseEvent extends SocketEvent {}
+
+class TestsLoadedEvent extends SocketEvent {
+  final List<TestData> tests;
+  final ResultData latest;
+
+  TestsLoadedEvent({this.tests, this.latest});
+}
+
+class UpdateTestsEvent extends SocketEvent {}

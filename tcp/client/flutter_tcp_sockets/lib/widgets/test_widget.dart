@@ -4,23 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tcp_sockets/bloc/socket_bloc.dart';
 import 'package:flutter_tcp_sockets/data/test_data.dart';
-import 'package:flutter_tcp_sockets/widgets/question_widget.dart';
+import 'package:flutter_tcp_sockets/pages/test_page.dart';
 
 class TestWidget extends StatefulWidget {
   final TestData testData;
-  final Function receiveData;
-  final QuestionWidget questionWidget;
-  final bool initiallyExpanded;
-  final Widget subtitle;
+  final num result;
   bool started;
-  TestWidget(
-      {Key key,
-      this.testData,
-      this.receiveData,
-      this.questionWidget,
-      this.initiallyExpanded = false,
-      this.started = false,
-      this.subtitle})
+  TestWidget({Key key, this.testData, this.result, this.started = false})
       : super(key: key);
 
   @override
@@ -30,22 +20,25 @@ class TestWidget extends StatefulWidget {
 class _TestWidgetState extends State<TestWidget> {
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      subtitle: widget.subtitle,
-      initiallyExpanded: widget.initiallyExpanded,
+    return ListTile(
       title: Text(widget.testData.title),
-      onExpansionChanged: (opened) {
-        if (opened) {
-          if (!widget.started) {
-            widget.started = true;
-            BlocProvider.of<SocketBloc>(context).socket.write(jsonEncode({
-                  "action": "test",
-                  "params": {"id": widget.testData.id}
-                }));
-          }
+      subtitle: (widget.result != null)
+          ? Text("Last result: ${(widget.result * 100).toStringAsFixed(0)}%")
+          : null,
+      onTap: () {
+        if (!widget.started) {
+          BlocProvider.of<SocketBloc>(context).socket.write(jsonEncode({
+                "action": "test",
+                "params": {"id": widget.testData.id}
+              }));
+          widget.started = true;
         }
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          return TestPage(
+            data: widget.testData,
+          );
+        }));
       },
-      children: [widget.questionWidget ?? Container()],
     );
   }
 }

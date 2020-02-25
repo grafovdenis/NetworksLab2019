@@ -50,7 +50,6 @@ class _HomePageState extends State<HomePage> {
     return BlocListener<SocketBloc, SocketState>(
       listener: (context, state) {
         if (state is TestsState) {
-          socketBloc.add(TestsEvent());
           Navigator.of(context).pushNamed('/tests');
         }
       },

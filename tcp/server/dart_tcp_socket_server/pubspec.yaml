@@ -1,0 +1,4 @@
+name: dart_tcp_socket_server
+
+dependencies:
+    crypto: ^2.1.4
