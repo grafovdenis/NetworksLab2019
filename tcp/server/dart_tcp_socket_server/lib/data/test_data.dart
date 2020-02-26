@@ -27,10 +27,13 @@ class TestData {
 
   Map<String, dynamic> toMap() => {"title": title, "id": _id};
 
-  String startTest() => jsonEncode({
+  String startTest() {
+    _index = 0;
+    return jsonEncode({
         'action': 'answer',
         'params': {'question': questions[_index++].toMap()}
       });
+  }
 
   String nextQuestion({int answer}) {
     if (questions[_index - 1].rightAnswer == answer) {

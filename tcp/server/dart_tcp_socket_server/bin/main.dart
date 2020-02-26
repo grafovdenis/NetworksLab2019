@@ -53,35 +53,44 @@ void startServer() {
   serverFuture.then((ServerSocket server) {
     server.listen((Socket socket) {
       User user;
+      void _write(Object obj) {
+        socket.write(obj);
+        print("Send ${user?.username} $obj");
+      }
+
       socket.listen((List<int> data) {
         final json = jsonDecode(String.fromCharCodes(data));
-        print(json);
+        (user == null)
+            ? print(json)
+            : print("${user.username} send ${String.fromCharCodes(data)}");
         switch (json['action']) {
           case "login":
-            user = User(
-              socket: socket,
-              username: json['params']['username'],
-            );
-            if (!users.contains(user)) {
-              users.add(user);
-            } else {
+            bool stop = false;
+            users.forEach((_user) {
+              if (_user.socket != null &&
+                  _user.username == json['params']['username']) {
+                _write(jsonEncode({"action": "close"}));
+                stop = true;
+              }
+            });
+            if (!stop) {
               user = users.firstWhere((_user) {
-                print(_user.username == user.username);
-                return _user.username == user.username;
-              })
-                ..socket = user.socket;
+                return _user.username == json['params']['username'];
+              }, orElse: () {
+                final _user =
+                    User(socket: socket, username: json['params']['username']);
+                users.add(_user);
+                return _user;
+              });
+              _write(jsonEncode({'action': 'login'}));
             }
-            // users.forEach((_user) {
-            //   if (_user.username == user.username)
-            // });
-            socket.write(jsonEncode({'action': 'login'}));
             break;
           case "tests":
-            socket.write(jsonEncode({
+            _write(jsonEncode({
               'action': 'tests',
               'params': {
                 'tests': tests.map((test) => test.toMap()).toList(),
-                'last': (user.runningTest != null)
+                'last': (user?.runningTest != null)
                     ? {
                         "title": user.runningTest.title,
                         "result": user.runningTest.result
@@ -100,19 +109,20 @@ void startServer() {
               );
               user.runningTest =
                   tests.where((test) => test.id == user.runningTest.id).first;
-              socket.write(user.runningTest.startTest());
+              _write(user.runningTest.startTest());
             } else {
-              socket.write(jsonEncode({'action': 'close'}));
+              _write(jsonEncode({'action': 'close'}));
             }
             break;
           case "answer":
             final int answer = json['params']['answer'];
-            socket.write(user.runningTest.nextQuestion(answer: answer));
+            _write(user.runningTest.nextQuestion(answer: answer));
             break;
           default:
             break;
         }
       }).onDone(() {
+        user?.socket = null;
         socket.close();
       });
     });
