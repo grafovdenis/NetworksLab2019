@@ -10,7 +10,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final ipController = TextEditingController(text: "192.168.43.221");
+  final ipController = TextEditingController(text: "10.215.6.119");
   final usernameController = TextEditingController(text: "grafa");
   final portController = TextEditingController(text: "3000");
   final _formKey = GlobalKey<FormState>();

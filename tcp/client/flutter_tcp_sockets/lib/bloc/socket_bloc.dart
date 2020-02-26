@@ -90,7 +90,10 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
           "params": {"username": event.username}
         };
         socket.write(jsonEncode(message));
-        _streamSubscription = socket.listen(_listener);
+        _streamSubscription = socket.listen(_listener)
+          ..onDone(() {
+            this.add(CloseEvent());
+          });
         yield TestsState();
       } catch (e) {
         print(e);
@@ -103,6 +106,7 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     } else if (event is CloseEvent) {
       _streamSubscription.cancel();
       socket.close();
+      print("Disconnected");
       yield CloseState();
     } else if (event is UpdateTestsEvent) {
       socket.write(jsonEncode({

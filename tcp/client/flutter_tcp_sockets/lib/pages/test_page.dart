@@ -25,72 +25,81 @@ class TestPage extends StatelessWidget {
           },
         ),
       ),
-      body: BlocBuilder(
-        bloc: BlocProvider.of<SocketBloc>(context).questionBloc,
-        builder: (context, state) {
-          if (state is QuestionLoadedState) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      state.data.title,
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 100,
-                  ),
-                  Column(
-                    children: List.generate(state.data.answers.length, (index) {
-                      final answer = state.data.answers[index];
-                      return Container(
-                        padding: const EdgeInsets.all(8),
-                        child: RaisedButton(
-                          child: Text(answer.title),
-                          onPressed: () {
-                            BlocProvider.of<SocketBloc>(context)
-                                .socket
-                                .write(jsonEncode({
-                                  'action': 'answer',
-                                  "params": {
-                                    "answer": state.data.answers[index].id
-                                  }
-                                }));
-                          },
-                        ),
-                      );
-                    }),
-                  )
-                ],
-              ),
-            );
-          } else if (state is QuestionsEndedState) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                      "Your result is ${(state.resultData.result * 100).toStringAsFixed(0)}"),
-                  SizedBox(
-                    height: 50,
-                  ),
-                  RaisedButton(
-                    child: Text("Go back"),
-                    onPressed: () {
-                      BlocProvider.of<SocketBloc>(context).add(UpdateTestsEvent());
-                      Navigator.of(context).pop();
-                    },
-                  )
-                ],
-              ),
-            );
-          } else {
-            return Container();
+      body: BlocListener<SocketBloc, SocketState>(
+        listener: (context, state) {
+          if (state is CloseState) {
+            Navigator.of(context).popUntil((predicate) => predicate.isFirst);
           }
         },
+        child: BlocBuilder(
+          bloc: BlocProvider.of<SocketBloc>(context).questionBloc,
+          builder: (context, state) {
+            if (state is QuestionLoadedState) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(
+                        state.data.title,
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 100,
+                    ),
+                    Column(
+                      children:
+                          List.generate(state.data.answers.length, (index) {
+                        final answer = state.data.answers[index];
+                        return Container(
+                          padding: const EdgeInsets.all(8),
+                          child: RaisedButton(
+                            child: Text(answer.title),
+                            onPressed: () {
+                              BlocProvider.of<SocketBloc>(context)
+                                  .socket
+                                  .write(jsonEncode({
+                                    'action': 'answer',
+                                    "params": {
+                                      "answer": state.data.answers[index].id
+                                    }
+                                  }));
+                            },
+                          ),
+                        );
+                      }),
+                    )
+                  ],
+                ),
+              );
+            } else if (state is QuestionsEndedState) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                        "Your result is ${(state.resultData.result * 100).toStringAsFixed(0)}%"),
+                    SizedBox(
+                      height: 50,
+                    ),
+                    RaisedButton(
+                      child: Text("Go back"),
+                      onPressed: () {
+                        BlocProvider.of<SocketBloc>(context)
+                            .add(UpdateTestsEvent());
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          },
+        ),
       ),
     );
   }

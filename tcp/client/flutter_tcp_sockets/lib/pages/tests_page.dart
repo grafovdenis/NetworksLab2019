@@ -28,7 +28,7 @@ class _TestsPageState extends State<TestsPage> {
       body: BlocListener<SocketBloc, SocketState>(
         listener: (context, state) {
           if (state is CloseState) {
-            Navigator.of(context).pop();
+            Navigator.of(context).popUntil((predicate) => predicate.isFirst);
           } else if (state is UpdateTestsState) {
             tests = tests.map((it) => TestWidget(
                   started: false,
