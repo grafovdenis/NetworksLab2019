@@ -38,23 +38,6 @@ def find_record(domain):
     return
 
 
-def send_udp_message(message, address, port):
-    """send_udp_message sends a message to UDP server
-
-    message should be a hexadecimal encoded string
-    """
-    message = message.replace(" ", "").replace("\n", "")
-    server_address = (address, port)
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        sock.sendto(binascii.unhexlify(message), server_address)
-        data, _ = sock.recvfrom(4096)
-    finally:
-        sock.close()
-    return binascii.hexlify(data).decode("utf-8")
-
-
 def encode_url(url):
     _first = url.split(".")[0]
     _first_len = len(_first)
@@ -111,7 +94,7 @@ def main():
         _answer = _name + _type + _class + _something + _ttl + _rd_len + ip
         _result = (_header + _question + _answer).replace(
             " ", "").lower()
-        sock.sendto(binascii.unhexlify(_result), (UDP_IP, UDP_PORT + 1))
+        sock.sendto(binascii.unhexlify(_result), addr)
         print(_result, "sent")
 
 
